@@ -1,0 +1,843 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🔬 Sistema de Checking ISO 17025</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e, #16213e);
+            color: white;
+            min-height: 100vh;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #0f3460, #16213e);
+            padding: 20px;
+            text-align: center;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin: 10px 0;
+            background: linear-gradient(45deg, #e94560, #ff6b6b);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .toolbar {
+            background: #16213e;
+            padding: 15px;
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+        }
+
+        .btn {
+            background: linear-gradient(45deg, #e94560, #ff6b6b);
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 14px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(233, 69, 96, 0.3);
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(233, 69, 96, 0.4);
+        }
+
+        .container {
+            display: flex;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+            gap: 20px;
+            min-height: calc(100vh - 200px);
+        }
+
+        .sidebar {
+            background: rgba(15, 52, 96, 0.9);
+            border-radius: 15px;
+            padding: 20px;
+            width: 350px;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+        }
+
+        .sidebar h3 {
+            color: #e94560;
+            margin-bottom: 20px;
+            font-size: 1.3em;
+        }
+
+        .section-list {
+            list-style: none;
+        }
+
+        .section-item {
+            background: rgba(22, 33, 62, 0.8);
+            margin: 10px 0;
+            padding: 15px;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border-left: 4px solid transparent;
+        }
+
+        .section-item:hover {
+            background: rgba(233, 69, 96, 0.2);
+            border-left-color: #e94560;
+            transform: translateX(5px);
+        }
+
+        .section-item.active {
+            background: rgba(233, 69, 96, 0.3);
+            border-left-color: #e94560;
+        }
+
+        .main-content {
+            flex: 1;
+            background: rgba(22, 33, 62, 0.9);
+            border-radius: 15px;
+            padding: 30px;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+            overflow-y: auto;
+            max-height: calc(100vh - 200px);
+        }
+
+        .main-content h3 {
+            color: #e94560;
+            margin-bottom: 30px;
+            font-size: 1.4em;
+        }
+
+        .question-card {
+            background: rgba(15, 52, 96, 0.8);
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 25px;
+            border: 1px solid rgba(233, 69, 96, 0.3);
+            transition: all 0.3s ease;
+        }
+
+        .question-card:hover {
+            border-color: #e94560;
+            box-shadow: 0 5px 20px rgba(233, 69, 96, 0.2);
+        }
+
+        .question-header {
+            color: #e94560;
+            font-weight: bold;
+            font-size: 1.1em;
+            margin-bottom: 10px;
+        }
+
+        .question-text {
+            font-size: 1.05em;
+            line-height: 1.6;
+            margin-bottom: 10px;
+        }
+
+        .question-definition {
+            color: #ffb347;
+            font-style: italic;
+            font-size: 0.9em;
+            margin-bottom: 20px;
+            padding: 10px;
+            background: rgba(255, 179, 71, 0.1);
+            border-radius: 8px;
+        }
+
+        .options-group {
+            margin: 20px 0;
+        }
+
+        .radio-option {
+            display: flex;
+            align-items: center;
+            margin: 10px 0;
+            padding: 10px;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+
+        .radio-option:hover {
+            background: rgba(233, 69, 96, 0.1);
+        }
+
+        .radio-option input[type="radio"] {
+            width: 20px;
+            height: 20px;
+            margin-right: 12px;
+            accent-color: #e94560;
+        }
+
+        .radio-option label {
+            cursor: pointer;
+            font-size: 1em;
+        }
+
+        .comment-section {
+            margin-top: 20px;
+        }
+
+        .comment-label {
+            color: #ffb347;
+            font-weight: bold;
+            margin-bottom: 10px;
+            display: block;
+        }
+
+        .comment-textarea {
+            width: 100%;
+            height: 80px;
+            background: rgba(22, 33, 62, 0.8);
+            border: 1px solid rgba(233, 69, 96, 0.3);
+            border-radius: 8px;
+            padding: 12px;
+            color: white;
+            font-family: inherit;
+            font-size: 0.95em;
+            resize: vertical;
+        }
+
+        .comment-textarea:focus {
+            outline: none;
+            border-color: #e94560;
+            box-shadow: 0 0 10px rgba(233, 69, 96, 0.3);
+        }
+
+        .progress-info {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: rgba(15, 52, 96, 0.95);
+            padding: 15px 25px;
+            border-radius: 25px;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+            z-index: 1000;
+        }
+
+        .progress-percentage {
+            font-size: 1.8em;
+            font-weight: bold;
+            color: #e94560;
+            text-align: center;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 2000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.8);
+            backdrop-filter: blur(5px);
+        }
+
+        .modal-content {
+            background: linear-gradient(135deg, #1a1a2e, #16213e);
+            margin: 5% auto;
+            padding: 30px;
+            border-radius: 20px;
+            width: 90%;
+            max-width: 600px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+        }
+
+        .close {
+            color: #e94560;
+            float: right;
+            font-size: 35px;
+            font-weight: bold;
+            cursor: pointer;
+            line-height: 1;
+        }
+
+        .close:hover {
+            color: #ff6b6b;
+        }
+
+        .form-group {
+            margin: 20px 0;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #e94560;
+            font-weight: bold;
+        }
+
+        .form-group input, .form-group select, .form-group textarea {
+            width: 100%;
+            padding: 12px;
+            background: rgba(22, 33, 62, 0.8);
+            border: 1px solid rgba(233, 69, 96, 0.3);
+            border-radius: 8px;
+            color: white;
+            font-size: 1em;
+        }
+
+        .form-group input:focus, .form-group select:focus, .form-group textarea:focus {
+            outline: none;
+            border-color: #e94560;
+            box-shadow: 0 0 10px rgba(233, 69, 96, 0.3);
+        }
+
+        .report-content {
+            background: rgba(22, 33, 62, 0.9);
+            padding: 20px;
+            border-radius: 10px;
+            max-height: 500px;
+            overflow-y: auto;
+            font-family: 'Courier New', monospace;
+            white-space: pre-wrap;
+            line-height: 1.6;
+        }
+
+        .no-questions {
+            text-align: center;
+            color: #e94560;
+            font-size: 1.2em;
+            padding: 50px;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .container {
+                flex-direction: column;
+                padding: 10px;
+            }
+            
+            .sidebar {
+                width: 100%;
+                margin-bottom: 20px;
+            }
+            
+            .progress-info {
+                position: relative;
+                top: auto;
+                right: auto;
+                margin: 20px auto;
+                width: fit-content;
+            }
+            
+            .header h1 {
+                font-size: 2em;
+            }
+            
+            .toolbar {
+                justify-content: center;
+            }
+            
+            .btn {
+                padding: 10px 15px;
+                font-size: 12px;
+            }
+        }
+
+        /* Animaciones */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .question-card {
+            animation: fadeIn 0.5s ease-out;
+        }
+
+        /* Efectos glassmorphism */
+        .sidebar, .main-content {
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🔬⚡ Sistema de Checking ISO 17025</h1>
+        <p>Sistema web para evaluación de laboratorios</p>
+    </div>
+
+    <div class="toolbar">
+        <button class="btn" onclick="openAddQuestionModal()">➕ Agregar Pregunta</button>
+        <button class="btn" onclick="openDeleteQuestionModal()">🗑️ Eliminar Pregunta</button>
+        <button class="btn" onclick="saveProgress()">💾 Guardar Progreso</button>
+        <button class="btn" onclick="generateReport()">📊 Generar Informe</button>
+        <button class="btn" onclick="exportData()">📤 Exportar Datos</button>
+        <button class="btn" onclick="importData()">📥 Importar Datos</button>
+    </div>
+
+    <div class="progress-info">
+        <div class="progress-percentage" id="progressPercentage">0%</div>
+        <div style="font-size: 0.8em; text-align: center; margin-top: 5px;">Completado</div>
+    </div>
+
+    <div class="container">
+        <div class="sidebar">
+            <h3>📋 Secciones de la Norma</h3>
+            <ul class="section-list" id="sectionList">
+                <!-- Las secciones se cargarán dinámicamente -->
+            </ul>
+        </div>
+
+        <div class="main-content">
+            <h3 id="sectionTitle">❓ Selecciona una sección</h3>
+            <div id="questionsContainer">
+                <div class="no-questions">
+                    Selecciona una sección de la izquierda para comenzar la evaluación
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal para agregar pregunta -->
+    <div id="addQuestionModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal('addQuestionModal')">&times;</span>
+            <h2 style="color: #e94560; margin-bottom: 20px;">➕ Añadir Nueva Pregunta</h2>
+            
+            <div class="form-group">
+                <label>📂 Sección:</label>
+                <select id="newQuestionSection">
+                    <!-- Se llenará dinámicamente -->
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label>🔢 ID de la pregunta:</label>
+                <input type="text" id="newQuestionId" placeholder="Ej: 4.1.1">
+            </div>
+            
+            <div class="form-group">
+                <label>❓ Texto de la pregunta:</label>
+                <textarea id="newQuestionText" rows="3" placeholder="Escriba la pregunta aquí..."></textarea>
+            </div>
+            
+            <div class="form-group">
+                <label>📖 Definición/Explicación:</label>
+                <textarea id="newQuestionDefinition" rows="2" placeholder="Definición o contexto de la pregunta..."></textarea>
+            </div>
+            
+            <button class="btn" onclick="saveNewQuestion()" style="width: 100%; margin-top: 20px;">💾 Guardar Pregunta</button>
+        </div>
+    </div>
+
+    <!-- Modal para eliminar pregunta -->
+    <div id="deleteQuestionModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal('deleteQuestionModal')">&times;</span>
+            <h2 style="color: #e94560; margin-bottom: 20px;">🗑️ Eliminar Pregunta</h2>
+            
+            <div class="form-group">
+                <label>Preguntas disponibles:</label>
+                <select id="deleteQuestionSelect" size="8" style="height: 200px;">
+                    <!-- Se llenará dinámicamente -->
+                </select>
+            </div>
+            
+            <button class="btn" onclick="deleteSelectedQuestion()" style="width: 100%; margin-top: 20px; background: #dc3545;">🗑️ Eliminar Pregunta</button>
+        </div>
+    </div>
+
+    <!-- Modal para mostrar informe -->
+    <div id="reportModal" class="modal">
+        <div class="modal-content" style="max-width: 900px;">
+            <span class="close" onclick="closeModal('reportModal')">&times;</span>
+            <h2 style="color: #e94560; margin-bottom: 20px;">📊 Informe de Evaluación</h2>
+            
+            <div class="report-content" id="reportContent">
+                <!-- El informe se generará aquí -->
+            </div>
+            
+            <button class="btn" onclick="downloadReport()" style="width: 100%; margin-top: 20px;">💾 Descargar Informe</button>
+        </div>
+    </div>
+
+    <script>
+        // Variables globales
+        let sections = [
+            "4. Requisitos generales",
+            "5. Requisitos estructurales", 
+            "6. Recursos",
+            "7. Requisitos del proceso",
+            "8. Requisitos del sistema de gestión"
+        ];
+
+        let questions = {
+            "4. Requisitos generales": [
+                {
+                    id: "4.1.1",
+                    text: "¿El laboratorio realiza sus actividades de manera imparcial?",
+                    definition: "Imparcialidad: Ausencia de conflictos de interés que puedan afectar los resultados",
+                    options: ["Sí", "No"]
+                },
+                {
+                    id: "4.1.2", 
+                    text: "¿El laboratorio tiene políticas documentadas para prevenir la corrupción?",
+                    definition: "Política anticorrupción documentada y comunicada a todo el personal",
+                    options: ["Sí", "No"]
+                },
+                {
+                    id: "4.2.1",
+                    text: "¿El laboratorio es legalmente responsable de sus actividades?",
+                    definition: "Responsabilidad legal clara y documentada",
+                    options: ["Sí", "No"]
+                }
+            ],
+            "5. Requisitos estructurales": [
+                {
+                    id: "5.1.1",
+                    text: "¿El laboratorio tiene definida su estructura organizacional?",
+                    definition: "Organigrama claro con responsabilidades y autoridades definidas",
+                    options: ["Sí", "No"]
+                },
+                {
+                    id: "5.2.1",
+                    text: "¿Existe separación clara entre funciones incompatibles?",
+                    definition: "Separación de funciones que podrían crear conflictos de interés",
+                    options: ["Sí", "No"]
+                }
+            ],
+            "6. Recursos": [
+                {
+                    id: "6.1.1",
+                    text: "¿El personal tiene la competencia necesaria para realizar las actividades?",
+                    definition: "Competencia técnica demostrada y documentada",
+                    options: ["Sí", "No"]
+                },
+                {
+                    id: "6.2.1",
+                    text: "¿Las instalaciones y condiciones ambientales son adecuadas?",
+                    definition: "Instalaciones que no afectan adversamente los resultados",
+                    options: ["Sí", "No"]
+                }
+            ],
+            "7. Requisitos del proceso": [
+                {
+                    id: "7.1.1",
+                    text: "¿Se revisan los contratos antes de aceptarlos?",
+                    definition: "Revisión sistemática de la capacidad para cumplir los requisitos",
+                    options: ["Sí", "No"]
+                },
+                {
+                    id: "7.2.1",
+                    text: "¿Se validan los métodos no normalizados?",
+                    definition: "Validación: Confirmación mediante evidencia objetiva de que se cumplen los requisitos",
+                    options: ["Sí", "No"]
+                }
+            ],
+            "8. Requisitos del sistema de gestión": [
+                {
+                    id: "8.1.1",
+                    text: "¿Existe un sistema de gestión documentado?",
+                    definition: "Sistema de gestión apropiado para el alcance de las actividades",
+                    options: ["Sí", "No"]
+                },
+                {
+                    id: "8.2.1",
+                    text: "¿Se mantienen registros de las actividades técnicas?",
+                    definition: "Registros que demuestran el cumplimiento de los procedimientos",
+                    options: ["Sí", "No"]
+                }
+            ]
+        };
+
+        let responses = {};
+        let currentSection = null;
+
+        // Cargar datos al iniciar
+        document.addEventListener('DOMContentLoaded', function() {
+            loadFromLocalStorage();
+            loadSections();
+            updateProgress();
+        });
+
+        // Cargar desde localStorage
+        function loadFromLocalStorage() {
+            try {
+                const savedResponses = localStorage.getItem('iso17025_responses');
+                const savedQuestions = localStorage.getItem('iso17025_questions');
+                const savedSections = localStorage.getItem('iso17025_sections');
+                
+                if (savedResponses) {
+                    responses = JSON.parse(savedResponses);
+                }
+                if (savedQuestions) {
+                    questions = JSON.parse(savedQuestions);
+                }
+                if (savedSections) {
+                    sections = JSON.parse(savedSections);
+                }
+            } catch (error) {
+                console.error('Error cargando datos:', error);
+            }
+        }
+
+        // Guardar en localStorage
+        function saveToLocalStorage() {
+            try {
+                localStorage.setItem('iso17025_responses', JSON.stringify(responses));
+                localStorage.setItem('iso17025_questions', JSON.stringify(questions));
+                localStorage.setItem('iso17025_sections', JSON.stringify(sections));
+            } catch (error) {
+                console.error('Error guardando datos:', error);
+            }
+        }
+
+        // Cargar secciones
+        function loadSections() {
+            const sectionList = document.getElementById('sectionList');
+            sectionList.innerHTML = '';
+            
+            sections.forEach((section, index) => {
+                const li = document.createElement('li');
+                li.className = 'section-item';
+                li.textContent = section;
+                li.onclick = () => loadSectionQuestions(section, li);
+                sectionList.appendChild(li);
+            });
+        }
+
+        // Cargar preguntas de una sección
+        function loadSectionQuestions(section, element) {
+            // Remover clase activa de todos los elementos
+            document.querySelectorAll('.section-item').forEach(item => {
+                item.classList.remove('active');
+            });
+            
+            // Agregar clase activa al elemento seleccionado
+            element.classList.add('active');
+            
+            currentSection = section;
+            document.getElementById('sectionTitle').textContent = `❓ ${section}`;
+            
+            const container = document.getElementById('questionsContainer');
+            container.innerHTML = '';
+            
+            const sectionQuestions = questions[section] || [];
+            
+            if (sectionQuestions.length === 0) {
+                container.innerHTML = '<div class="no-questions">No hay preguntas disponibles en esta sección</div>';
+                return;
+            }
+            
+            sectionQuestions.forEach(question => {
+                createQuestionWidget(question, container);
+            });
+            
+            updateProgress();
+        }
+
+        // Crear widget de pregunta
+        function createQuestionWidget(question, container) {
+            const questionCard = document.createElement('div');
+            questionCard.className = 'question-card';
+            
+            const questionId = question.id;
+            const savedResponse = responses[questionId] || '';
+            const savedComment = responses[`${questionId}_comment`] || '';
+            
+            questionCard.innerHTML = `
+                <div class="question-header">🔸 ${question.id}</div>
+                <div class="question-text">${question.text}</div>
+                ${question.definition ? `<div class="question-definition">📖 ${question.definition}</div>` : ''}
+                
+                <div class="options-group">
+                    ${question.options.map(option => `
+                        <div class="radio-option">
+                            <input type="radio" 
+                                   id="${questionId}_${option}" 
+                                   name="${questionId}" 
+                                   value="${option}"
+                                   ${savedResponse === option ? 'checked' : ''}
+                                   onchange="saveResponse('${questionId}', '${option}')">
+                            <label for="${questionId}_${option}">${option}</label>
+                        </div>
+                    `).join('')}
+                </div>
+                
+                <div class="comment-section">
+                    <label class="comment-label">💬 Comentarios:</label>
+                    <textarea class="comment-textarea" 
+                              id="${questionId}_comment"
+                              placeholder="Añade comentarios adicionales aquí..."
+                              onchange="saveComment('${questionId}', this.value)">${savedComment}</textarea>
+                </div>
+            `;
+            
+            container.appendChild(questionCard);
+        }
+
+        // Guardar respuesta
+        function saveResponse(questionId, value) {
+            responses[questionId] = value;
+            saveToLocalStorage();
+            updateProgress();
+        }
+
+        // Guardar comentario
+        function saveComment(questionId, value) {
+            responses[`${questionId}_comment`] = value;
+            saveToLocalStorage();
+        }
+
+        // Calcular y actualizar progreso
+        function updateProgress() {
+            let totalQuestions = 0;
+            let answeredQuestions = 0;
+            
+            sections.forEach(section => {
+                const sectionQuestions = questions[section] || [];
+                sectionQuestions.forEach(question => {
+                    totalQuestions++;
+                    if (responses[question.id]) {
+                        answeredQuestions++;
+                    }
+                });
+            });
+            
+            const percentage = totalQuestions > 0 ? Math.round((answeredQuestions / totalQuestions) * 100) : 0;
+            document.getElementById('progressPercentage').textContent = `${percentage}%`;
+        }
+
+        // Guardar progreso
+        function saveProgress() {
+            saveToLocalStorage();
+            alert('✅ Progreso guardado exitosamente');
+        }
+
+        // Abrir modal para agregar pregunta
+        function openAddQuestionModal() {
+            const modal = document.getElementById('addQuestionModal');
+            const select = document.getElementById('newQuestionSection');
+            
+            select.innerHTML = '';
+            sections.forEach(section => {
+                const option = document.createElement('option');
+                option.value = section;
+                option.textContent = section;
+                select.appendChild(option);
+            });
+            
+            modal.style.display = 'block';
+        }
+
+        // Guardar nueva pregunta
+        function saveNewQuestion() {
+            const section = document.getElementById('newQuestionSection').value;
+            const id = document.getElementById('newQuestionId').value.trim();
+            const text = document.getElementById('newQuestionText').value.trim();
+            const definition = document.getElementById('newQuestionDefinition').value.trim();
+            
+            if (!id || !text) {
+                alert('⚠️ Por favor completa todos los campos obligatorios');
+                return;
+            }
+            
+            if (!questions[section]) {
+                questions[section] = [];
+            }
+            
+            // Verificar si el ID ya existe
+            const existingQuestion = questions[section].find(q => q.id === id);
+            if (existingQuestion) {
+                alert('⚠️ Ya existe una pregunta con ese ID');
+                return;
+            }
+            
+            const newQuestion = {
+                id: id,
+                text: text,
+                definition: definition,
+                options: ["Sí", "No"]
+            };
+            
+            questions[section].push(newQuestion);
+            saveToLocalStorage();
+            
+            // Actualizar vista si estamos en la misma sección
+            if (currentSection === section) {
+                const sectionElement = document.querySelector('.section-item.active');
+                if (sectionElement) {
+                    loadSectionQuestions(section, sectionElement);
+                }
+            }
+            
+            closeModal('addQuestionModal');
+            alert('✅ Pregunta añadida correctamente');
+            
+            // Limpiar formulario
+            document.getElementById('newQuestionId').value = '';
+            document.getElementById('newQuestionText').value = '';
+            document.getElementById('newQuestionDefinition').value = '';
+        }
+
+        // Abrir modal para eliminar pregunta
+        function openDeleteQuestionModal() {
+            if (!currentSection) {
+                alert('⚠️ Selecciona una sección primero');
+                return;
+            }
+            
+            const modal = document.getElementById('deleteQuestionModal');
+            const select = document.getElementById('deleteQuestionSelect');
+            
+            select.innerHTML = '';
+            const sectionQuestions = questions[currentSection] || [];
+            
+            if (sectionQuestions.length === 0) {
+                alert('ℹ️ No hay preguntas en esta sección');
+                return;
+            }
+            
+            sectionQuestions.forEach((question, index) => {
+                const option = document.createElement('option');
+                option.value = index;
+                option.textContent = `${question.id}: ${question.text.substring(0, 50)}...`;
+                select.appendChild(option);
+            });
+            
+            modal.style.display = 'block';
+        }
+
+        // Eliminar pregunta seleccionada
+        function deleteSelectedQuestion() {
+            const select = document.getElementById('deleteQuestionSelect');
+            const selectedIndex = select.selectedIndex;
+            
+            if (selectedIndex === -1) {
+                alert('⚠️ Selecciona una pregunta');
+                return;
+            }
+            
+            if (!confirm('🗑️ ¿Estás seguro de que quieres eliminar esta pregunta?')) {
+                return;
+            }
+            
+            questions[currentSection].splice(selectedIndex, 1);
+            saveToLocalStorage();
+            
+            // Actualizar vista
+            const sectionElement = document.querySelector('.section-item.active');
+            if (sectionElement) {
